@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.Ed Admission Predictive Mock Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        .option-btn { transition: all 0.2s ease; }
+        .option-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .option-btn:not(:disabled):active { transform: translateY(0); }
+        
+        .correct-ans { background-color: #10b981 !important; color: white !important; border-color: #10b981 !important; }
+        .wrong-ans { background-color: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+        .missed-ans { background-color: #d1fae5 !important; color: #065f46 !important; border-color: #10b981 !important; border-width: 2px !important; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        .shake { animation: shake 0.4s; }
+        
+        .passage-box::-webkit-scrollbar { width: 6px; }
+        .passage-box::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .passage-box::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .passage-box::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="text-gray-800 h-screen flex flex-col overflow-hidden">
+
+    <header class="bg-blue-700 text-white shadow-md z-10 flex-shrink-0">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-lg md:text-xl font-bold truncate"><i class="fas fa-book-open mr-2"></i>Predictive B.Ed Mock Test</h1>
+            <div id="score-display" class="hidden text-sm md:text-base font-semibold bg-blue-800 px-4 py-1.5 rounded-full shadow-inner">
+                Live Score: <span id="live-score">0.00</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow overflow-y-auto w-full">
+        <div class="max-w-5xl mx-auto p-4 h-full flex flex-col">
+            
+            <div id="start-screen" class="flex-grow flex flex-col items-center justify-center text-center p-6 bg-white rounded-xl shadow-sm border border-gray-200 my-auto">
+                <i class="fas fa-bullseye text-6xl text-blue-500 mb-4"></i>
+                <h2 class="text-2xl md:text-3xl font-bold mb-2 text-gray-800">State Selection Board (Expected Pattern)</h2>
+                <h3 class="text-xl md:text-2xl font-semibold mb-6 text-gray-600">B.Ed Admission Mock Test</h3>
+                
+                <div class="bg-blue-50 p-5 md:p-6 rounded-xl text-left max-w-md w-full mb-8 border border-blue-100">
+                    <h4 class="font-bold text-blue-900 mb-4 border-b border-blue-200 pb-2 text-lg">Test Syllabus & Rules:</h4>
+                    <ul class="text-sm space-y-3 text-blue-800">
+                        <li><i class="fas fa-layer-group mr-2 text-blue-500 w-5"></i><strong>100 Questions</strong> (English, Odia, Gen. Aw, Reasoning, Teaching)</li>
+                        <li><i class="fas fa-check-circle mr-2 text-green-500 w-5"></i><strong>+1 Mark</strong> for every correct answer</li>
+                        <li><i class="fas fa-minus-circle mr-2 text-red-500 w-5"></i><strong>-0.25 Marks</strong> for every wrong answer</li>
+                        <li><i class="fas fa-lock mr-2 text-blue-500 w-5"></i>Options <strong>lock automatically</strong> once clicked.</li>
+                        <li><i class="fas fa-volume-up mr-2 text-blue-500 w-5"></i>Keep device volume ON for audio alerts.</li>
+                    </ul>
+                </div>
+                
+                <button onclick="startTest()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-full shadow-lg transition-all hover:shadow-xl hover:-translate-y-1 active:translate-y-0 text-lg w-full md:w-auto">
+                    Start Predictive Test <i class="fas fa-play ml-2"></i>
+                </button>
+            </div>
+
+            <div id="quiz-screen" class="hidden flex-col h-full">
+                <div class="flex justify-between items-center text-sm font-medium text-gray-500 mb-2 px-1">
+                    <span>Question <span id="q-current" class="text-blue-600 font-bold text-lg">1</span> of 100</span>
+                    <span id="q-status"></span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 mb-5 overflow-hidden">
+                    <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 1%"></div>
+                </div>
+
+                <div class="flex-grow flex flex-col md:flex-row gap-4 overflow-hidden mb-4">
+                    <div id="passage-container" class="hidden w-full md:w-1/2 bg-white p-5 rounded-xl shadow-sm border border-gray-200 overflow-y-auto passage-box text-gray-700 text-sm md:text-base leading-relaxed">
+                    </div>
+
+                    <div id="question-container" class="w-full bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-200 overflow-y-auto flex-grow flex flex-col">
+                        <h3 id="question-text" class="text-lg md:text-xl font-semibold mb-6 text-gray-800 leading-snug"></h3>
+                        <div id="options-container" class="space-y-3 flex-grow"></div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-200 flex-shrink-0">
+                    <button onclick="prevQuestion()" id="btn-prev" class="px-5 py-2.5 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base flex items-center">
+                        <i class="fas fa-chevron-left mr-2"></i> Prev
+                    </button>
+                    
+                    <button onclick="finishTest()" id="btn-submit" class="hidden px-6 py-2.5 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 transition-all shadow-md hover:shadow-lg text-sm md:text-base flex items-center">
+                        Submit Exam <i class="fas fa-check-circle ml-2"></i>
+                    </button>
+
+                    <button onclick="nextQuestion()" id="btn-next" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors shadow-md text-sm md:text-base flex items-center">
+                        Next <i class="fas fa-chevron-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="result-screen" class="hidden flex-grow flex flex-col items-center justify-center text-center p-4 md:p-8 bg-white rounded-xl shadow-sm border border-gray-200 my-auto">
+                <div id="result-icon" class="text-7xl mb-6"></div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-3 text-gray-800">Exam Concluded</h2>
+                <p class="text-gray-500 mb-8 text-lg">Here is your detailed predictive performance report.</p>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-4xl mb-10">
+                    <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                        <div class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Attempted</div>
+                        <div id="res-attempted" class="text-3xl md:text-4xl font-bold text-gray-700">0</div>
+                    </div>
+                    <div class="bg-green-50 p-5 rounded-xl border border-green-200">
+                        <div class="text-green-600 text-sm font-bold uppercase tracking-wider mb-2">Correct (+1)</div>
+                        <div id="res-correct" class="text-3xl md:text-4xl font-bold text-green-600">0</div>
+                    </div>
+                    <div class="bg-red-50 p-5 rounded-xl border border-red-200">
+                        <div class="text-red-500 text-sm font-bold uppercase tracking-wider mb-2">Incorrect (-0.25)</div>
+                        <div id="res-incorrect" class="text-3xl md:text-4xl font-bold text-red-500">0</div>
+                    </div>
+                    <div class="bg-blue-600 p-5 rounded-xl border border-blue-700 shadow-lg relative overflow-hidden text-white">
+                        <div class="absolute top-0 right-0 bg-blue-500 w-20 h-20 rounded-bl-full opacity-50 -mr-8 -mt-8"></div>
+                        <div class="text-blue-100 text-sm font-bold uppercase tracking-wider mb-2 relative z-10">Final Score</div>
+                        <div id="res-score" class="text-4xl md:text-5xl font-black relative z-10">0.00</div>
+                    </div>
+                </div>
+
+                <button onclick="location.reload()" class="bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-transform hover:-translate-y-1">
+                    <i class="fas fa-sync-alt mr-2"></i> Retake Test
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // High-probability simulated questions covering the exact SSB B.Ed syllabus
+        const engPassage = `Education is not an end, but a means to an end. In other words, we do not educate children only for the purpose of educating them. Our purpose is to fit them for life. As soon as we realize this fact, we will understand that it is very important to choose a system of education which will really prepare children for life. In many modern countries, it has for some time been fashionable to think that by free education for all—whether rich or poor, clever or stupid—one can solve all the problems of society and build a perfect nation. But we can already see that free education for all is not enough; we find in such countries a far larger number of people with university degrees than there are jobs for them to fill. Because of their degrees, they refuse to do what they think 'low' work, and, in fact, work with hands is thought to be dirty and shameful in such countries.`;
+        
+        const odiaPassage = `ମାତୃଭାଷା ମନୁଷ୍ୟର ଜନ୍ମଗତ ଅଧିକାର । ଶିଶୁଟିଏ ଭୂମିଷ୍ଠ ହେବା ପରେ ପ୍ରଥମେ ନିଜ ମା’ର ମୁଖରୁ ଯେଉଁ ଭାଷା ଶୁଣିବାକୁ ପାଏ, ତାହା ହିଁ ତାର ମାତୃଭାଷା । ଜଣେ ବ୍ୟକ୍ତି ଯେତେ ବିଦ୍ୱାନ ହେଲେ ମଧ୍ୟ, ଯଦି ସେ ନିଜ ମାତୃଭାଷାକୁ ଅବହେଳା କରେ, ତେବେ ତା’ର ଶିକ୍ଷା ଅସମ୍ପୂର୍ଣ୍ଣ ରହିଯାଏ । ମାତୃଭାଷା ମାଧ୍ୟମରେ ମଣିଷ ନିଜର ମନର ଭାବକୁ ଯେତିକି ସ୍ପଷ୍ଟ ଏବଂ ସହଜରେ ପ୍ରକାଶ କରିପାରେ, ଅନ୍ୟ କୌଣସି ଭାଷାରେ ତାହା ସମ୍ଭବ ନୁହେଁ । ଆଧୁନିକ ଯୁଗରେ ଇଂରାଜୀ ବା ଅନ୍ୟାନ୍ୟ ଆନ୍ତର୍ଜାତିକ ଭାଷା ଶିଖିବା ଜରୁରୀ, କିନ୍ତୁ ଏହାର ଅର୍ଥ ନୁହେଁ ଯେ ଆମେ ନିଜ ମାତୃଭାଷାକୁ ଭୁଲିଯିବା । ନିଜ ମାତୃଭାଷାର ଉନ୍ନତି ବିନା କୌଣସି ଜାତି ବା ସମାଜର ପ୍ରକୃତ ବିକାଶ ସମ୍ଭବ ନୁହେଁ ।`;
+
+        const quizData = [
+            // --- ENGLISH (1-20) ---
+            { text: "According to the author, what is the primary purpose of education?", passage: engPassage, options: ["To award degrees", "To solve all problems of society", "To prepare children for life", "To provide free education for all"], correct: 2 },
+            { text: "What issue has arisen in countries providing free education for all?", passage: engPassage, options: ["There is a shortage of educated people", "There are more degree holders than available jobs", "The quality of education has decreased", "People are forced to do manual labour"], correct: 1 },
+            { text: "How do degree holders in these countries view manual labor?", passage: engPassage, options: ["As highly respectable", "As dirty and shameful", "As a necessary stepping stone", "As financially rewarding"], correct: 1 },
+            { text: "The phrase 'Education is not an end, but a means to an end' implies that:", passage: engPassage, options: ["Education is useless", "Education is a tool to achieve life goals", "Education ends when school ends", "Education guarantees a high-paying job"], correct: 1 },
+            { text: "Choose the synonym for 'Abundant':", options: ["Scarce", "Plentiful", "Deficient", "Rare"], correct: 1 },
+            { text: "Choose the antonym for 'Diligent':", options: ["Hardworking", "Careful", "Lazy", "Active"], correct: 2 },
+            { text: "A person who does not believe in the existence of God is a/an:", options: ["Theist", "Atheist", "Agnostic", "Pacifist"], correct: 1 },
+            { text: "Select the correctly spelt word:", options: ["Accomodation", "Accommodation", "Acommodation", "Accomoddation"], correct: 1 },
+            { text: "Identify the grammatically correct sentence:", options: ["She is more taller than her sister.", "She is taller than her sister.", "She is most tall than her sister.", "She is the taller than her sister."], correct: 1 },
+            { text: "Neither the principal nor the teachers _____ present in the meeting.", options: ["was", "were", "has", "is"], correct: 1 },
+            { text: "He has been living here _____ 2015.", options: ["from", "for", "since", "in"], correct: 2 },
+            { text: "Change into Passive Voice: 'The mechanic is repairing the car.'", options: ["The car was repaired by the mechanic.", "The car is being repaired by the mechanic.", "The car has been repaired by the mechanic.", "The car repairs the mechanic."], correct: 1 },
+            { text: "Change into Indirect Speech: He said, 'I am reading a book.'", options: ["He said that he is reading a book.", "He said that he was reading a book.", "He says that he was reading a book.", "He said that I was reading a book."], correct: 1 },
+            { text: "He is good _____ Mathematics.", options: ["in", "at", "with", "for"], correct: 1 },
+            { text: "Which sentence is correctly punctuated?", options: ["My brother who lives in London is a doctor.", "My brother, who lives in London, is a doctor.", "My brother who lives in London, is a doctor.", "My brother, who lives in London is a doctor."], correct: 1 },
+            { text: "The word 'quickly' in the sentence 'She ran quickly' is a/an:", options: ["Adjective", "Verb", "Adverb", "Noun"], correct: 2 },
+            { text: "Which of the following is a complex sentence?", options: ["I like tea, but my sister prefers coffee.", "Because it was raining, we stayed indoors.", "He studied hard and passed the exam.", "The sun rose in the east."], correct: 1 },
+            { text: "Find the error: 'One of the boys have broken the window.'", options: ["One of", "the boys", "have broken", "the window"], correct: 2 },
+            { text: "He prefers tea _____ coffee.", options: ["than", "over", "to", "against"], correct: 2 },
+            { text: "Change to Exclamatory: 'It is a very beautiful painting.'", options: ["How beautiful painting it is!", "What a beautiful painting it is!", "How a beautiful painting it is!", "What beautiful painting is it!"], correct: 1 },
+
+            // --- ODIA (21-35) ---
+            { text: "ଉପରୋକ୍ତ ଅନୁଚ୍ଛେଦ ଅନୁସାରେ ମାତୃଭାଷା କାହାର ଅଧିକାର?", passage: odiaPassage, options: ["କେବଳ ବିଦ୍ୱାନମାନଙ୍କର", "କେବଳ ଶିଶୁମାନଙ୍କର", "ମନୁଷ୍ୟର ଜନ୍ମଗତ ଅଧିକାର", "ଶିକ୍ଷକମାନଙ୍କର"], correct: 2 },
+            { text: "ମାତୃଭାଷାକୁ ଅବହେଳା କଲେ କ'ଣ ହୁଏ?", passage: odiaPassage, options: ["ମଣିଷ ଅଧିକ ଜ୍ଞାନୀ ହୁଏ", "ଶିକ୍ଷା ଅସମ୍ପୂର୍ଣ୍ଣ ରହିଯାଏ", "ସମାଜର ବିକାଶ ହୁଏ", "ଅନ୍ୟ ଭାଷା ଶିଖିବା ସହଜ ହୁଏ"], correct: 1 },
+            { text: "ମନର ଭାବକୁ ସବୁଠାରୁ ସହଜରେ କେଉଁ ଭାଷାରେ ପ୍ରକାଶ କରାଯାଇପାରେ?", passage: odiaPassage, options: ["ଇଂରାଜୀ ଭାଷାରେ", "ଆନ୍ତର୍ଜାତିକ ଭାଷାରେ", "ମାତୃଭାଷାରେ", "ସଂସ୍କୃତ ଭାଷାରେ"], correct: 2 },
+            { text: "‘ବୃକ୍ଷରୁ ପତ୍ର ପଡ଼ିଲା’ - ଏଠାରେ ‘ବୃକ୍ଷରୁ’ କେଉଁ କାରକ?", options: ["କର୍ତ୍ତା କାରକ", "କରଣ କାରକ", "ଅପାଦାନ କାରକ", "ଅଧିକରଣ କାରକ"], correct: 2 },
+            { text: "‘ଦଶାନନ’ - ଏହା କେଉଁ ସମାସ?", options: ["କର୍ମଧାରୟ", "ବହୁବ୍ରୀହି", "ଦ୍ଵିଗୁ", "ତତ୍‌ପୁରୁଷ"], correct: 1 },
+            { text: "ଶୁଦ୍ଧ ଶବ୍ଦଟିକୁ ବାଛ:", options: ["ଆଶିର୍ବାଦ", "ଆଶୀର୍ବାଦ", "ଆସୀର୍ବାଦ", "ଆଶୀର୍ବ୍ବାଦ"], correct: 1 },
+            { text: "‘ବିଦ୍ୟାଳୟ’ ଶବ୍ଦର ସନ୍ଧି ବିଚ୍ଛେଦ କର:", options: ["ବିଦ୍ୟା + ଅଳୟ", "ବିଦ୍ୟ + ଆଳୟ", "ବିଦ୍ୟା + ଆଳୟ", "ବିଦ୍ୟାଳ + ୟ"], correct: 2 },
+            { text: "‘ଯେଉଁ ପଦ ବିଶେଷ୍ୟ ପଦର ଗୁଣ, ଅବସ୍ଥା ବା ସଂଖ୍ୟା ବୁଝାଏ, ତାହାକୁ କ’ଣ କୁହାଯାଏ?", options: ["ବିଶେଷଣ", "ସର୍ବନାମ", "କ୍ରିୟା", "ଅବ୍ୟୟ"], correct: 0 },
+            { text: "‘ପାଣିଗ୍ରହଣ’ ରୂଢିର ଅର୍ଥ କ’ଣ?", options: ["ପାଣି ପିଇବା", "ବିବାହ କରିବା", "ପ୍ରତିଜ୍ଞା କରିବା", "ଜଳ ଦାନ କରିବା"], correct: 1 },
+            { text: "‘ଆକାଶ’ ର ପ୍ରତିଶବ୍ଦ କେଉଁଟି ନୁହେଁ?", options: ["ଅମ୍ବର", "ଗଗନ", "ନଭ", "ଧରା"], correct: 3 },
+            { text: "କର୍ମ କାରକରେ କେଉଁ ବିଭକ୍ତି ହୁଏ?", options: ["ପ୍ରଥମା", "ଦ୍ଵିତୀୟା", "ତୃତୀୟା", "ଚତୁର୍ଥୀ"], correct: 1 },
+            { text: "‘ପାଚିଲା ଆମ୍ବ’ - ଏଠାରେ ‘ପାଚିଲା’ କେଉଁ ପ୍ରକାରର ବିଶେଷଣ?", options: ["ଅବସ୍ଥାବାଚକ", "ଗୁଣବାଚକ", "ସଂଖ୍ୟାବାଚକ", "ପରିମାଣବାଚକ"], correct: 0 },
+            { text: "‘ଗାୟକ’ ଶବ୍ଦର ପ୍ରକୃତି ପ୍ରତ୍ୟୟ କ’ଣ?", options: ["ଗୈ + ଅକ", "ଗା + ୟକ", "ଗୀ + ଅକ", "ଗୋ + ଅକ"], correct: 0 },
+            { text: "ଯେଉଁ ବାକ୍ୟରେ ଗୋଟିଏ ମାତ୍ର ସମାପିକା କ୍ରିୟା ଥାଏ ତାହାକୁ କେଉଁ ବାକ୍ୟ କୁହନ୍ତି?", options: ["ଜଟିଳ ବାକ୍ୟ", "ମିଶ୍ର ବାକ୍ୟ", "ସରଳ ବାକ୍ୟ", "ଯୌଗିକ ବାକ୍ୟ"], correct: 2 },
+            { text: "‘ନଦୀମାନଙ୍କ ମଧ୍ୟରେ ଗଙ୍ଗା ଶ୍ରେଷ୍ଠ’ - ଏଠାରେ ‘ନଦୀମାନଙ୍କ ମଧ୍ୟରେ’ କେଉଁ ବିଭକ୍ତି?", options: ["ପଞ୍ଚମୀ", "ଷଷ୍ଠୀ", "ସପ୍ତମୀ", "ତୃତୀୟା"], correct: 2 },
+
+            // --- REASONING (36-50) ---
+            { text: "Find the missing number: 2, 6, 12, 20, 30, ?", options: ["40", "42", "44", "48"], correct: 1 },
+            { text: "If 'APPLE' is coded as 'EQQPI', how is 'MANGO' coded?", options: ["QERKS", "QDRKS", "QERJS", "REQKS"], correct: 0 }, // +4 to each letter
+            { text: "Pointing to a photograph, a man said, 'I have no brother or sister but that man's father is my father's son.' Whose photograph was it?", options: ["His own", "His son's", "His father's", "His nephew's"], correct: 1 },
+            { text: "A girl walks 5 km South, then turns East and walks 3 km, then turns North and walks 5 km. How far is she from the starting point?", options: ["3 km East", "3 km West", "5 km South", "8 km North"], correct: 0 },
+            { text: "Statements: All cars are cats. All fans are cats. \nConclusions: I. All cars are fans. II. Some fans are cars.", options: ["Only I follows", "Only II follows", "Both I and II follow", "Neither I nor II follows"], correct: 3 },
+            { text: "Choose the odd one out:", options: ["Carrot", "Potato", "Tomato", "Ginger"], correct: 2 }, // Tomato grows above ground
+            { text: "If A is the sister of B, B is the brother of C, and C is the son of D, how is D related to A?", options: ["Mother/Father", "Uncle", "Grandfather", "Cousin"], correct: 0 },
+            { text: "Find the next term in the series: Z, X, V, T, R, ?", options: ["P", "Q", "O", "S"], correct: 0 },
+            { text: "In a row of boys, Rahul is 12th from the left and 15th from the right. How many boys are there in the row?", options: ["26", "27", "28", "25"], correct: 0 },
+            { text: "If '+' means 'x', '-' means '+', 'x' means '/' and '/' means '-', what is 10 + 5 x 5 - 2 ?", options: ["12", "10", "15", "8"], correct: 0 }, // 10*5/5+2 = 12
+            { text: "Ophthalmologist is to Eye as Dermatologist is to:", options: ["Heart", "Bones", "Skin", "Teeth"], correct: 2 },
+            { text: "What is the angle between the hour hand and minute hand of a clock at 3:30?", options: ["90°", "75°", "60°", "105°"], correct: 1 },
+            { text: "Statements: Some dogs are rats. All rats are trees.\nConclusions: I. Some dogs are trees. II. Some trees are dogs.", options: ["Only I follows", "Only II follows", "Both I and II follow", "Neither follows"], correct: 2 },
+            { text: "Arrange sequentially: 1. Rain 2. Vaporization 3. Water 4. Condensation 5. Cloud", options: ["3, 2, 4, 5, 1", "3, 2, 5, 4, 1", "1, 3, 2, 5, 4", "2, 3, 5, 4, 1"], correct: 0 },
+            { text: "If 1st January 2024 was a Monday, what day was 31st December 2024?", options: ["Monday", "Tuesday", "Sunday", "Wednesday"], correct: 1 }, // Leap year
+
+            // --- GENERAL AWARENESS (51-80) ---
+            { text: "Who was the Viceroy of India during the partition of Bengal in 1905?", options: ["Lord Dalhousie", "Lord Curzon", "Lord Mountbatten", "Lord Ripon"], correct: 1 },
+            { text: "The Battle of Plassey was fought in the year:", options: ["1757", "1764", "1857", "1799"], correct: 0 },
+            { text: "Who founded the Arya Samaj?", options: ["Raja Ram Mohan Roy", "Swami Vivekananda", "Swami Dayanand Saraswati", "Annie Besant"], correct: 2 },
+            { text: "The slogan 'Liberty, Equality, Fraternity' is associated with which revolution?", options: ["Russian Revolution", "French Revolution", "American Revolution", "Industrial Revolution"], correct: 1 },
+            { text: "Which treaty officially ended the First World War?", options: ["Treaty of Paris", "Treaty of Versailles", "Treaty of Vienna", "Treaty of London"], correct: 1 },
+            { text: "Which Article of the Indian Constitution deals with the Right to Equality?", options: ["Article 14-18", "Article 19-22", "Article 25-28", "Article 32"], correct: 0 },
+            { text: "The idea of Fundamental Duties was borrowed from the constitution of which country?", options: ["USA", "UK", "USSR (Russia)", "Ireland"], correct: 2 },
+            { text: "Who is the ex-officio Chairman of the Rajya Sabha?", options: ["President of India", "Prime Minister", "Vice President of India", "Chief Justice of India"], correct: 2 },
+            { text: "Under which Article can the President declare a National Emergency?", options: ["Article 352", "Article 356", "Article 360", "Article 370"], correct: 0 },
+            { text: "The term 'Secular' was added to the Preamble of the Indian Constitution by which Amendment?", options: ["42nd Amendment", "44th Amendment", "73rd Amendment", "86th Amendment"], correct: 0 },
+            { text: "Which is the longest river in Peninsular India?", options: ["Krishna", "Kaveri", "Godavari", "Narmada"], correct: 2 },
+            { text: "Nathu La pass connects India with which neighboring country?", options: ["Nepal", "Bhutan", "China", "Myanmar"], correct: 2 },
+            { text: "Which state in India is the largest producer of Bauxite?", options: ["Jharkhand", "Odisha", "Chhattisgarh", "Madhya Pradesh"], correct: 1 },
+            { text: "The standard meridian of India (82°30' E) passes through which of the following cities?", options: ["Bhopal", "Mirzapur", "Lucknow", "Ahmedabad"], correct: 1 },
+            { text: "Chilika Lake, a major Ramsar site, is located in:", options: ["West Bengal", "Andhra Pradesh", "Odisha", "Tamil Nadu"], correct: 2 },
+            { text: "Deficiency of Vitamin C causes:", options: ["Night blindness", "Beriberi", "Scurvy", "Rickets"], correct: 2 },
+            { text: "Which gas is most responsible for Global Warming?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], correct: 2 },
+            { text: "The powerhouse of the cell is called:", options: ["Ribosome", "Nucleus", "Mitochondria", "Endoplasmic Reticulum"], correct: 2 },
+            { text: "What is the chemical formula of Baking Soda?", options: ["NaCl", "NaHCO3", "Na2CO3", "NaOH"], correct: 1 },
+            { text: "Which blood group is known as the universal donor?", options: ["A+", "AB+", "O-", "B-"], correct: 2 },
+            { text: "In Economics, a situation where inflation is high and economic growth rate slows down is called:", options: ["Deflation", "Hyperinflation", "Stagflation", "Recession"], correct: 2 },
+            { text: "Which body estimates the National Income of India?", options: ["RBI", "NITI Aayog", "Central Statistical Organisation (CSO)", "Ministry of Finance"], correct: 2 },
+            { text: "The monetary policy in India is formulated by:", options: ["State Bank of India", "Reserve Bank of India", "Finance Ministry", "NITI Aayog"], correct: 1 },
+            { text: "Disguised unemployment is prominently found in which sector in India?", options: ["Industrial", "Service", "Agriculture", "IT"], correct: 2 },
+            { text: "Goods and Services Tax (GST) was implemented in India in the year:", options: ["2014", "2015", "2016", "2017"], correct: 3 },
+            { text: "The boundary line between India and China is known as:", options: ["Radcliffe Line", "Durand Line", "MacMahon Line", "Maginot Line"], correct: 2 },
+            { text: "Who was the first woman President of the Indian National Congress?", options: ["Sarojini Naidu", "Annie Besant", "Indira Gandhi", "Sucheta Kriplani"], correct: 1 },
+            { text: "The term 'Mixed Economy' denotes:", options: ["Co-existence of rich and poor", "Co-existence of private and public sectors", "Co-existence of agriculture and industry", "Co-existence of rural and urban sectors"], correct: 1 },
+            { text: "Who invented the Penicillin?", options: ["Marie Curie", "Alexander Fleming", "Louis Pasteur", "Isaac Newton"], correct: 1 },
+            { text: "Which of the following planets is known as the 'Red Planet'?", options: ["Venus", "Jupiter", "Saturn", "Mars"], correct: 3 },
+
+            // --- TEACHING APTITUDE (81-100) ---
+            { text: "According to the National Education Policy (NEP) 2020, what is the new pedagogical structure?", options: ["10+2", "5+3+3+4", "8+4+3", "5+4+3+3"], correct: 1 },
+            { text: "The Right to Education (RTE) Act makes education a fundamental right for children in the age group of:", options: ["6 to 14 years", "4 to 18 years", "5 to 15 years", "3 to 14 years"], correct: 0 },
+            { text: "Which of the following is the most important quality of a good teacher?", options: ["Strict discipline", "Subject mastery and communication skills", "Dressing well", "Assigning lots of homework"], correct: 1 },
+            { text: "If a student frequently asks questions in the class, a teacher should:", options: ["Ignore the student", "Punish the student for disturbing", "Encourage the student and answer patiently", "Tell the student to ask after class only"], correct: 2 },
+            { text: "Formative assessment is primarily used to:", options: ["Grade students at the end of the year", "Monitor student learning during instruction", "Determine promotion to the next class", "Compare schools' performances"], correct: 1 },
+            { text: "Which commission recommended the 'Three-Language Formula'?", options: ["Kothari Commission", "Radhakrishnan Commission", "Mudaliar Commission", "Hunter Commission"], correct: 0 },
+            { text: "The primary purpose of inclusive education is to:", options: ["Educate only disabled children", "Provide education to all children in the same classroom regardless of their differences", "Provide separate schools for special children", "Focus only on gifted children"], correct: 1 },
+            { text: "In teaching, 'Scaffolding' refers to:", options: ["Building a physical structure", "Providing temporary support to a learner to achieve a goal", "Testing students rigorously", "Memorizing facts"], correct: 1 },
+            { text: "Which of the following operates as the apex body for Teacher Education in India?", options: ["UGC", "NCERT", "NCTE", "CBSE"], correct: 2 },
+            { text: "When dealing with a backbencher who is talking during a lesson, the teacher should:", options: ["Throw them out of class", "Ask them a question related to the topic", "Ignore them completely", "Complain to the principal immediately"], correct: 1 },
+            { text: "A learner-centric classroom focuses on:", options: ["The teacher's convenience", "Completing the syllabus quickly", "Active participation and needs of the students", "Strict silence"], correct: 2 },
+            { text: "SWAYAM is an initiative by the Government of India for:", options: ["Providing free online courses", "Distributing laptops", "Providing mid-day meals", "Funding higher education"], correct: 0 },
+            { text: "The concept of 'Multiple Intelligences' was proposed by:", options: ["Jean Piaget", "Howard Gardner", "B.F. Skinner", "Lev Vygotsky"], correct: 1 },
+            { text: "Micro-teaching is a technique used for:", options: ["Teaching small children", "Teaching a micro-topic", "Developing specific teaching skills in pupil-teachers", "Teaching a small class size"], correct: 2 },
+            { text: "Which domain of learning involves the development of attitudes, emotions, and values?", options: ["Cognitive Domain", "Affective Domain", "Psychomotor Domain", "Physical Domain"], correct: 1 },
+            { text: "The National Curriculum Framework (NCF) 2005 emphasizes:", options: ["Rote learning", "Learning without burden", "Frequent examinations", "Teacher-centered education"], correct: 1 },
+            { text: "Dyslexia is a learning disability primarily associated with difficulty in:", options: ["Writing", "Calculating", "Reading", "Speaking"], correct: 2 },
+            { text: "The best way to motivate students is to:", options: ["Give them expensive prizes", "Threaten them with failure", "Relate learning to their real-life experiences", "Praise them unconditionally regardless of effort"], correct: 2 },
+            { text: "Continuous and Comprehensive Evaluation (CCE) aims to evaluate:", options: ["Only scholastic aspects", "Only co-scholastic aspects", "Both scholastic and co-scholastic aspects", "Only physical fitness"], correct: 2 },
+            { text: "A teacher's primary responsibility in the modern classroom is to be a:", options: ["Dictator", "Facilitator of learning", "Strict disciplinarian", "Passive observer"], correct: 1 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; // { questionIndex: optionIndex }
+        let score = 0;
+        
+        // Audio Engine
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(isCorrect) {
+            initAudio();
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                if (isCorrect) {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
+                    osc.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.1); // A5
+                    gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.2);
+                }
+            } catch(e) { console.error("Audio block", e); }
+        }
+
+        function startTest() {
+            initAudio();
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('flex');
+            document.getElementById('score-display').classList.remove('hidden');
+            loadQuestion(0);
+        }
+
+        function loadQuestion(index) {
+            currentQuestionIndex = index;
+            const q = quizData[index];
+            
+            // Progress Bar
+            document.getElementById('q-current').innerText = (index + 1);
+            document.getElementById('progress-bar').style.width = `${((index + 1) / quizData.length) * 100}%`;
+            
+            // Status marker
+            const statusEl = document.getElementById('q-status');
+            if (userAnswers[index] !== undefined) {
+                statusEl.innerHTML = `<span class="text-green-600 font-bold"><i class="fas fa-check-circle"></i> Locked</span>`;
+            } else {
+                statusEl.innerHTML = `<span class="text-gray-400"><i class="fas fa-unlock"></i> Pending</span>`;
+            }
+
+            // Paragraph handling
+            const passageContainer = document.getElementById('passage-container');
+            if (q.passage) {
+                passageContainer.classList.remove('hidden');
+                passageContainer.innerHTML = `<h4 class="font-bold text-gray-800 mb-2 border-b pb-1 text-lg">Read the Passage:</h4><p class="text-justify">${q.passage}</p>`;
+            } else {
+                passageContainer.classList.add('hidden');
+            }
+
+            // Question
+            document.getElementById('question-text').innerText = `Q${index + 1}. ${q.text}`;
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            const letters = ['A', 'B', 'C', 'D'];
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-gray-50 font-medium text-gray-700 hover:bg-blue-50 hover:border-blue-300 flex items-center shadow-sm`;
+                btn.innerHTML = `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-700 font-bold mr-3 flex-shrink-0">${letters[idx]}</span> ${opt}`;
+                
+                // If answered
+                if (userAnswers[index] !== undefined) {
+                    btn.disabled = true;
+                    btn.classList.add('cursor-not-allowed');
+                    
+                    if (idx === q.correct) {
+                        btn.classList.add('missed-ans');
+                        btn.innerHTML += `<i class="fas fa-check ml-auto text-green-700 text-xl"></i>`;
+                    }
+                    if (userAnswers[index] === idx) {
+                        if (idx === q.correct) {
+                            btn.classList.add('correct-ans');
+                            btn.classList.remove('missed-ans');
+                        } else {
+                            btn.classList.add('wrong-ans');
+                            btn.innerHTML += `<i class="fas fa-times ml-auto text-white text-xl"></i>`;
+                        }
+                    }
+                } else {
+                    btn.onclick = () => selectOption(index, idx);
+                }
+                optionsContainer.appendChild(btn);
+            });
+
+            // Nav buttons
+            document.getElementById('btn-prev').disabled = index === 0;
+            
+            if (index === quizData.length - 1) {
+                document.getElementById('btn-next').classList.add('hidden');
+                document.getElementById('btn-submit').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-next').classList.remove('hidden');
+                document.getElementById('btn-submit').classList.add('hidden');
+            }
+        }
+
+        function selectOption(questionIndex, optionIndex) {
+            if (userAnswers[questionIndex] !== undefined) return;
+
+            const q = quizData[questionIndex];
+            userAnswers[questionIndex] = optionIndex;
+            const isCorrect = (optionIndex === q.correct);
+
+            // -0.25 Negative Marking Applied
+            if (isCorrect) score += 1;
+            else score -= 0.25;
+            
+            document.getElementById('live-score').innerText = score.toFixed(2);
+            playSound(isCorrect);
+            loadQuestion(questionIndex);
+            
+            if (!isCorrect) {
+                const qContainer = document.getElementById('question-container');
+                qContainer.classList.add('shake');
+                setTimeout(() => qContainer.classList.remove('shake'), 400);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < quizData.length - 1) loadQuestion(currentQuestionIndex + 1);
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) loadQuestion(currentQuestionIndex - 1);
+        }
+
+        function finishTest() {
+            if (!confirm("Are you sure you want to end the test? Unanswered questions will score 0.")) return;
+
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('score-display').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            let attempted = Object.keys(userAnswers).length;
+            let correctCount = 0;
+            let incorrectCount = 0;
+
+            for (let i = 0; i < quizData.length; i++) {
+                if (userAnswers[i] !== undefined) {
+                    if (userAnswers[i] === quizData[i].correct) correctCount++;
+                    else incorrectCount++;
+                }
+            }
+
+            const finalScore = (correctCount * 1) - (incorrectCount * 0.25);
+
+            document.getElementById('res-attempted').innerText = attempted;
+            document.getElementById('res-correct').innerText = correctCount;
+            document.getElementById('res-incorrect').innerText = incorrectCount;
+            document.getElementById('res-score').innerText = finalScore.toFixed(2);
+
+            const resIcon = document.getElementById('result-icon');
+            const pct = finalScore / quizData.length;
+            if (pct >= 0.7) {
+                resIcon.innerHTML = `<i class="fas fa-crown text-yellow-400"></i>`;
+                resIcon.className += " animate-bounce";
+            } else if (pct >= 0.4) {
+                resIcon.innerHTML = `<i class="fas fa-thumbs-up text-blue-400"></i>`;
+            } else {
+                resIcon.innerHTML = `<i class="fas fa-book-open text-gray-400"></i>`;
+            }
+        }
+    </script>
+</body>
+</html>
